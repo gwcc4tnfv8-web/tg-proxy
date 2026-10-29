@@ -107,15 +107,6 @@ $("go").addEventListener("click", async () => {
   try {
     data = await decrypt(pw);
     $("btn").href = data.tg;
-    data.qrReady = false;
-    try {
-      const cv = document.createElement("canvas");
-      $("qrbox").innerHTML = "";
-      $("qrbox").appendChild(cv);
-      QRCode.toCanvas(cv, data.tg, { width: 220, margin: 1 });
-      data.qrReady = true;
-    }
-    catch (e) { $("qrbox").style.display = "none"; }
     $("lock").style.display = "none";
     $("done").style.display = "block";
   } catch (e) {
@@ -124,11 +115,6 @@ $("go").addEventListener("click", async () => {
   $("go").disabled = false;
 });
 $("pw").addEventListener("keydown", (ev) => { if (ev.key === "Enter") $("go").click(); });
-
-try {
-  if (!window.QRCode || !QRCode.toCanvas) throw new Error("no lib");
-  $("note").textContent = "";
-} catch (e) {}
 
 $("copy").addEventListener("click", async () => {
   if (!data) return;
