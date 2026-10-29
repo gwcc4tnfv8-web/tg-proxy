@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Telegram Proxy — подключение</title>
+<style>
+:root { color-scheme: dark; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  min-height: 100dvh; display: flex; align-items: center; justify-content: center;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: radial-gradient(1200px 800px at 20% -10%, #1c6ea4 0%, #0f3a5c 45%, #0a1a2a 100%);
+  padding: 24px;
+}
+.card {
+  width: min(400px, 100%); background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.14); border-radius: 20px;
+  padding: 28px 24px; text-align: center; color: #fff;
+  backdrop-filter: blur(14px); box-shadow: 0 24px 60px rgba(0,0,0,.45);
+}
+.plane { font-size: 44px; }
+h1 { font-size: 20px; font-weight: 700; margin: 10px 0 4px; }
+.sub { font-size: 13px; opacity: .75; margin-bottom: 20px; }
+input {
+  width: 100%; padding: 13px 14px; font-size: 16px; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.25); background: rgba(0,0,0,.25); color: #fff;
+  outline: none; text-align: center; letter-spacing: 2px;
+}
+input:focus { border-color: #4fc3f7; }
+button {
+  margin-top: 14px; width: 100%; padding: 14px; font-size: 16px; font-weight: 700;
+  border: none; border-radius: 12px; cursor: pointer; color: #fff;
+  background: linear-gradient(90deg, #29a9eb, #1f6fe0);
+  transition: transform .06s ease, filter .2s ease;
+}
+button:active { transform: scale(.98); }
+button[disabled] { filter: grayscale(.6); opacity: .7; cursor: default; }
+.err { color: #ff8f8f; font-size: 13px; min-height: 18px; margin-top: 10px; }
+.done { display: none; }
+.btn-tg { display: inline-block; text-decoration: none; }
+.srv { font-size: 12px; opacity: .6; margin-top: 16px; line-height: 1.6; }
+.qr { margin: 18px auto 4px; padding: 10px; background: #fff; border-radius: 14px; width: min(240px, 80%); }
+.qr canvas, .qr img { width: 100% !important; height: auto; display: block; }
+
+.copy {
+  margin-top: 10px; font-size: 13px; color: #9cd3f5; cursor: pointer;
+  background: none; border: none; text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<div class="card">
+  <div id="lock" class="page">
+    <div class="plane">🔐</div>
+    <h1>Прокси для Telegram</h1>
+    <div class="sub">Введите пароль, чтобы получить кнопку подключения</div>
+    <input id="pw" type="password" inputmode="numeric" placeholder="••••" autocomplete="off">
+    <button id="go" type="button">Открыть</button>
+    <div id="err" class="err"></div>
+  </div>
+
+  <div id="done" class="page done">
+    <div class="plane">✅</div>
+    <h1>Готово к подключению</h1>
+    <div class="sub">Нажмите кнопку — Telegram откроет окно добавления прокси</div>
+    <a id="btn" class="btn-tg" href="#"><button type="button">📶 Подключить Telegram</button></a>
+    <div class="srv">
+      Сервер: <b>45.39.60.242</b> · Порт: <b>8443</b><br>
+      Настройки Telegram → Данные и память → Прокси
+    </div>
+    <button id="copy" type="button" class="copy" style="background:none;box-shadow:none;border:none;">Скопировать ссылку вручную</button>
+    <div class="err" id="note"></div>
+  </div>
+</div>
+
+<script>
+const PAYLOAD = "aZbVsCxkp/8jDK1vbu1+8s0JpqPj4rXldnHwnO9VBhARmAmd4Ox4Bn8IZEMWvpf5w/QnX36Av9oyWKAlBhb0Dt4pXbf6TuJ4OImRukwV3V8pAXyPSKTwOevEosi9Rr6dQLDONsR9Prvl1oKIvlWmUWLweDwxLvU9at5FATJaQg4aINBf/kK38QApCBqu5ak4Z2jKYVYtMYSSTkPeU1bL/CtFSLkTcNUKd1LZyXhHIZUHewQH9L9g5P10686Ybn2Mnw9gBuLEJ+FcBcrh/P1rzmwzARIA0oWtA34YHoeUBre1xeA6PSrBaqR++ofz+KrV54RyhK8HC9uv";
+const ITER = 200000;
+
+function b64ToBuf(b64) {
+  const bin = atob(b64.replace(/-/g,'+').replace(/_/g,'/'));
+  const buf = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+  return buf;
+}
+
+async function decrypt(pw) {
+  const raw = b64ToBuf(PAYLOAD);
+  const salt = raw.slice(0, 16), iv = raw.slice(16, 28), ct = raw.slice(28);
+  const baseKey = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt, iterations: ITER, hash: "SHA-256" },
+    baseKey, { name: "AES-GCM", iv, length: 256 }, false, ["decrypt"]);
+  const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ct);
+  return JSON.parse(new TextDecoder().decode(plain));
+}
+
+const $ = (id) => document.getElementById(id);
+let data = null;
+
+$("go").addEventListener("click", async () => {
+  const pw = $("pw").value.trim();
+  const err = $("err");
+  if (!pw) { err.textContent = "Введите пароль"; return; }
+  $("go").disabled = true; err.textContent = "⏳ Проверка...";
+  try {
+    data = await decrypt(pw);
+    $("btn").href = data.tg;
+    data.qrReady = false;
+    try {
+      const cv = document.createElement("canvas");
+      $("qrbox").innerHTML = "";
+      $("qrbox").appendChild(cv);
+      QRCode.toCanvas(cv, data.tg, { width: 220, margin: 1 });
+      data.qrReady = true;
+    }
+    catch (e) { $("qrbox").style.display = "none"; }
+    $("lock").style.display = "none";
+    $("done").style.display = "block";
+  } catch (e) {
+    err.textContent = "❌ Неверный пароль";
+  }
+  $("go").disabled = false;
+});
+$("pw").addEventListener("keydown", (ev) => { if (ev.key === "Enter") $("go").click(); });
+
+try {
+  if (!window.QRCode || !QRCode.toCanvas) throw new Error("no lib");
+  $("note").textContent = "";
+} catch (e) {}
+
+$("copy").addEventListener("click", async () => {
+  if (!data) return;
+  try {
+    await navigator.clipboard.writeText(data.https);
+    $("copy").textContent = "✅ Скопировано — вставьте в Telegram";
+  } catch (e) {
+    $("note").textContent = "Скопируйте вручную из адресной строки: " + data.https;
+  }
+});
+</script>
+</body>
+</html>
