@@ -66,7 +66,7 @@ button[disabled] { filter: grayscale(.6); opacity: .7; cursor: default; }
     <div class="sub">Нажмите кнопку — Telegram откроет окно добавления прокси</div>
     <a id="btn" class="btn-tg" href="#"><button type="button">📶 Подключить Telegram</button></a>
     <div class="srv">
-      Сервер: <b>45.39.60.242</b> · Порт: <b>8443</b><br>
+      Сервер: <b>45.39.60.242</b> · Порт: <b>80</b><br>
       Настройки Telegram → Данные и память → Прокси
     </div>
     <button id="copy" type="button" class="copy" style="background:none;box-shadow:none;border:none;">Скопировать ссылку вручную</button>
@@ -75,7 +75,7 @@ button[disabled] { filter: grayscale(.6); opacity: .7; cursor: default; }
 </div>
 
 <script>
-const PAYLOAD = "aZbVsCxkp/8jDK1vbu1+8s0JpqPj4rXldnHwnO9VBhARmAmd4Ox4Bn8IZEMWvpf5w/QnX36Av9oyWKAlBhb0Dt4pXbf6TuJ4OImRukwV3V8pAXyPSKTwOevEosi9Rr6dQLDONsR9Prvl1oKIvlWmUWLweDwxLvU9at5FATJaQg4aINBf/kK38QApCBqu5ak4Z2jKYVYtMYSSTkPeU1bL/CtFSLkTcNUKd1LZyXhHIZUHewQH9L9g5P10686Ybn2Mnw9gBuLEJ+FcBcrh/P1rzmwzARIA0oWtA34YHoeUBre1xeA6PSrBaqR++ofz+KrV54RyhK8HC9uv";
+const PAYLOAD = "yPIWBWFTOapTHSlyT7xVpx/3Szwuk81C2mMkQgoZkNgfYeyys0vvk8grOzCnUmZZxoeoxq+4wuYTZXTy17Tsfq6nSqrtBifM/c/kz/Vg4H+B6ocI6qsOHldqS+pHT8FbuWF1c+vULsXnVUeZR+08f3NEj7lQRzQXOhybfy/pwKmo7CxD+mdNv/r4ZGCzHcq+OlZKwH/KTyTDGNDWE7DGpW+lYs/mwdjhbfKYlppP08l5Qx5XoTNeQKIGD2rlY99VKoA/Y/YiV1Gi8rYnkPx4KqRlgdyf0CgpSCZSMbsIt3vSz1ANoGvuzZsbiBuweaWzQ9MlX3E=";
 const ITER = 200000;
 
 function b64ToBuf(b64) {
